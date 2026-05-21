@@ -638,8 +638,9 @@ h1 { margin: 8px 0 0; font-size: clamp(48px, 7vw, 86px); line-height: .92; lette
 select { height: 38px; border-radius: 8px; padding: 0 14px; }
 .shelf-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 20px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-auto-flow: row dense;
+  gap: 16px 10px;
   align-items: start;
 }
 .shelf-group > .list {
@@ -663,6 +664,12 @@ select { height: 38px; border-radius: 8px; padding: 0 14px; }
 .shelf-group.shelf-few > .list,
 .shelf-group.shelf-many > .list {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.shelf-group.shelf-one .record-row {
+  min-height: 112px;
+}
+.shelf-group.shelf-two .record-row {
+  min-height: 116px;
 }
 .shelf-group .record-row {
   min-height: 124px;
