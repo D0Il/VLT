@@ -809,7 +809,10 @@ function groupedRows(recs) {
     groups.get(key).push(rec);
   }
   return [...groups.entries()]
-    .map(([label, items]) => `<section class="shelf-group"><div class="shelf-label"><b>${esc(label)}</b><span>${items.length}</span></div><div class="list">${items.map(row).join('')}</div></section>`)
+    .map(([label, items]) => {
+      const sizeClass = items.length === 1 ? 'one' : items.length === 2 ? 'two' : items.length <= 4 ? 'few' : 'many';
+      return `<section class="shelf-group shelf-${sizeClass}"><div class="shelf-label"><b>${esc(label)}</b><span>${items.length}</span></div><div class="list">${items.map(row).join('')}</div></section>`;
+    })
     .join('');
 }
 

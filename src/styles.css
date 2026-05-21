@@ -638,11 +638,31 @@ h1 { margin: 8px 0 0; font-size: clamp(48px, 7vw, 86px); line-height: .92; lette
 select { height: 38px; border-radius: 8px; padding: 0 14px; }
 .shelf-panel {
   display: grid;
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px 12px;
+  align-items: start;
 }
 .shelf-group > .list {
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   align-items: stretch;
+}
+.shelf-group.shelf-one,
+.shelf-group.shelf-two {
+  grid-column: span 1;
+}
+.shelf-group.shelf-few {
+  grid-column: span 2;
+}
+.shelf-group.shelf-many {
+  grid-column: 1 / -1;
+}
+.shelf-group.shelf-one > .list,
+.shelf-group.shelf-two > .list {
+  grid-template-columns: 1fr;
+}
+.shelf-group.shelf-few > .list,
+.shelf-group.shelf-many > .list {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 .shelf-group .record-row {
   min-height: 124px;
@@ -1272,7 +1292,10 @@ select { height: 38px; border-radius: 8px; padding: 0 14px; }
 @media (max-width: 1120px) {
   .home-landing-grid { grid-template-columns: 1fr 1fr; }
   .home-landing-grid.tiles-3 { grid-template-columns: 1fr 1fr; }
-  .shelf-group > .list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .shelf-panel { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .shelf-group.shelf-few,
+  .shelf-group.shelf-many { grid-column: 1 / -1; }
+  .shelf-group > .list { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
   .tracklist-layout { grid-template-columns: 1fr; }
   .pool-list { max-height: 260px; }
   .grid-two, .grid-three { grid-template-columns: 1fr; }
@@ -1338,6 +1361,12 @@ select { height: 38px; border-radius: 8px; padding: 0 14px; }
   .import-controls { display: grid; grid-template-columns: 1fr; }
   .import-controls .btn,
   .import-controls select { width: 100%; }
+  .shelf-panel { grid-template-columns: 1fr; }
+  .shelf-group,
+  .shelf-group.shelf-one,
+  .shelf-group.shelf-two,
+  .shelf-group.shelf-few,
+  .shelf-group.shelf-many { grid-column: 1 / -1; }
   .shelf-group > .list { grid-template-columns: 1fr; }
   .record-row { grid-template-columns: 56px minmax(0, 1fr) auto; }
   .track-card {
