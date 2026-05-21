@@ -1,0 +1,15 @@
+{
+  "name": "vault",
+  "main": "worker.js",
+  "compatibility_date": "2026-05-19",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "r2_buckets": [
+    {
+      "binding": "VAULT_BUCKET",
+      "bucket_name": "song"
+    }
+  ]
+}

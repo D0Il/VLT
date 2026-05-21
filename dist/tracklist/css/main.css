@@ -1,0 +1,2008 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    background-color: transparent;
+    color: #1d1d1f;
+    padding-bottom: 0;
+}
+
+.itunes-window {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #ffffff;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.content {
+    display: flex;
+    position: relative;
+    z-index: 1;
+    padding-top: 4px; /* Adjusted to move content down by 4px */
+}
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+}
+
+.editable {
+    border: 1px solid transparent;
+    padding: 2px;
+    transition: border-color 0.3s;
+}
+
+.editable:hover {
+    border-color: #007aff;
+    cursor: text;
+}
+
+.file-input {
+    display: none;
+}
+
+.hidden-track {
+    opacity: 0.3;
+    font-style: italic;
+}
+
+.draggable {
+    cursor: default; /* Changed from ew-resize */
+    user-select: none;
+    position: relative;
+}
+
+.rounded-corners {
+    border-radius: 12px;
+}
+
+/* Styling for dropdowns */
+.dropdown-content,
+.toolbar-new-ui-dropdown-menu,
+.music-video-dropdown {
+    display: none;
+    position: absolute;
+    /* Enforce a fully opaque white surface to prevent any bleed-through */
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
+    min-width: 160px; /* slightly wider for better legibility */
+    /* subtle but readable shadow */
+    box-shadow: 0px 12px 30px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.06);
+    z-index: 3000000 !important;
+    right: 0;
+    bottom: 100%;
+    white-space: nowrap;
+    pointer-events: auto;
+    border: none;
+    border-radius: 8px;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mix-blend-mode: normal !important;
+    background-clip: padding-box !important;
+    color: #111 !important;
+
+    /* Create a clean surface layer to prevent any ancestor effects */
+    isolation: isolate !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: opacity, transform, background-color;
+    filter: none !important;
+}
+
+/* Ensure interactive children look and behave like a contained menu */
+.dropdown-content > * ,
+.toolbar-new-ui-dropdown-menu > * ,
+.music-video-dropdown > * {
+    background-color: #ffffff !important;
+    color: inherit !important;
+    position: relative;
+    z-index: 1;
+    box-shadow: none;
+    padding: 8px 12px; /* give menu items consistent padding */
+    min-width: 100%;
+    text-align: left;
+    border-radius: 6px;
+}
+
+/* Visual hover/focus states for menu items inside .dropdown-content */
+.dropdown-content > *:hover,
+.toolbar-new-ui-dropdown-menu > *:hover,
+.music-video-dropdown > *:hover {
+    background: linear-gradient(180deg,#ffffff,#f6f8fb);
+    transform: translateY(-1px);
+}
+
+/* Keep small dropdowns compact on narrow viewports */
+@media (max-width: 520px) {
+    .dropdown-content, .toolbar-new-ui-dropdown-menu, .music-video-dropdown {
+        min-width: 140px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+}
+
+@media (orientation: portrait) and (max-width: 1100px) {
+    body, html {
+        min-height: 100%;
+        overflow-x: hidden;
+    }
+
+    .itunes-window {
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .content {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding-top: 0;
+    }
+
+    .main-content {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .library-page {
+        padding: 28px 22px 36px;
+    }
+
+    .albums-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 18px;
+    }
+}
+
+/* Full-window dropdown modal for tracklist actions - professional iTunes-style styling */
+#fullDropdownModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    /* Keep backdrop transparent (no dark overlay) so underlying UI remains visible */
+    background: transparent;
+    z-index: 100050;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+#fullDropdownModal[aria-hidden="false"] {
+    display: flex;
+    pointer-events: auto;
+    /* No backdrop blur or darkening for a clean full-window menu */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Outer shell with layered depth */
+#fullDropdownContent {
+    width: 86%;
+    max-width: 540px;
+    max-height: 82vh;
+    border-radius: 12px;
+    /* Allow visible overflow so tooltips and pseudo-elements can extend outside the modal */
+    overflow: visible;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+
+    /* subtle glass + paper layering */
+    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(250,250,252,0.96) 100%);
+    box-shadow:
+        0 32px 80px rgba(3,10,18,0.55),      /* deep outer shadow */
+        inset 0 1px 0 rgba(255,255,255,0.6),  /* inner rim for lifted look */
+        inset 0 -8px 24px rgba(2,6,23,0.03);  /* soft inset at bottom */
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Polished header bar like iTunes: icon, title, subtle toolbar */
+#fullDropdownHeader {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    background: linear-gradient(180deg, rgba(247,247,249,0.85), rgba(240,240,244,0.6));
+    border-bottom: 1px solid rgba(15,20,30,0.04);
+    backdrop-filter: blur(4px);
+}
+
+/* small icon to the left */
+#fullDropdownHeader .modal-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    background: linear-gradient(180deg,#f7f7fb,#eef0f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(2,6,23,0.07);
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* main title area */
+#fullDropdownHeader .modal-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0b0b0d;
+    line-height: 1;
+}
+
+/* subtle subtitle / hint */
+#fullDropdownHeader .modal-sub {
+    margin-left: auto;
+    font-size: 12px;
+    color: #6b6f76;
+}
+
+/* content area: scrollable, with subtle separators and refined list items */
+#fullDropdownInner {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.995));
+}
+
+/* Each action row styled like a polished control */
+#fullDropdownInner a,
+#fullDropdownInner button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    color: #0b0b0d;
+    text-decoration: none;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    text-align: left;
+    font-size: 14px;
+    transition: background 0.14s cubic-bezier(.2,.9,.2,1), transform 0.06s, box-shadow 0.14s;
+}
+
+/* Description line shown under an item title in the full-window modal */
+#fullDropdownInner .item-desc {
+    font-size: 13px;
+    color: #6b6f76;
+    margin-top: 6px;
+    line-height: 1.25;
+    display: block;
+    width: calc(100% - 8px);
+}
+
+/* icon area inside item */
+#fullDropdownInner a .item-icon,
+#fullDropdownInner button .item-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    background: linear-gradient(180deg,#f5f6f8,#eef0f4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 12px rgba(2,6,23,0.04);
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+/* hover and focus states with gentle lift */
+#fullDropdownInner a:hover,
+#fullDropdownInner button:hover,
+#fullDropdownInner a:focus,
+#fullDropdownInner button:focus {
+    background: linear-gradient(180deg,#ffffff,#f6f8fb);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(3,10,18,0.08);
+    outline: none;
+}
+
+/* subtle separators between items for visual rhythm */
+#fullDropdownInner .divider {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+    margin: 6px 2px;
+    border-radius: 2px;
+}
+
+/* right aligned clarifying text or info */
+#fullDropdownInner .item-note {
+    margin-left: auto;
+    font-size: 12px;
+    color: #7a7e86;
+    flex-shrink: 0;
+}
+
+/* Close button: refined circular glyph */
+#fullDropdownClose {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(10,10,12,0.55);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 14;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.25);
+}
+#fullDropdownClose:hover {
+    background: rgba(10,10,12,0.75);
+}
+
+/* Compact responsive adjustments */
+@media (max-width: 520px) {
+    #fullDropdownContent { width: 94%; max-width: 94%; }
+    #fullDropdownClose { width: 32px; height: 32px; font-size: 16px; }
+    #fullDropdownHeader .modal-icon { width: 30px; height: 30px; }
+    #fullDropdownInner a, #fullDropdownInner button { padding: 10px; font-size: 13px; }
+}
+
+/* Accessibility: visible focus ring */
+#fullDropdownInner a:focus-visible,
+#fullDropdownInner button:focus-visible {
+    box-shadow: 0 6px 18px rgba(2,6,23,0.12), 0 0 0 3px rgba(0,122,255,0.12);
+    transform: translateY(-2px);
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-left: 8px;
+    color: #888; /* grey icon color */
+    background: transparent; /* keep background subtle */
+    border-radius: 50%;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    cursor: default;
+    border: none;
+    /* Prevent wrapping below the link text */
+    white-space: nowrap;
+
+    /* Ensure tooltip pseudo-elements render above the modal and aren't clipped */
+    position: relative;
+    z-index: 2147483648; /* ensure info icon and its tooltip are above nearly everything */
+    pointer-events: auto; /* allow interacting with the icon/tooltip */
+}
+
+/* Tooltip styling (shown on hover of the icon) */
+.info-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    transform-origin: bottom center;
+    z-index: 1002;
+}
+
+/* Small caret triangle */
+.info-icon::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0 6px;
+    border-style: solid;
+    border-color: rgba(0,0,0,0.85) transparent transparent transparent;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    z-index: 1002;
+}
+
+/* Show tooltip on hover/focus */
+.info-icon:hover::after,
+.info-icon:focus::after,
+.info-icon:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px);
+}
+
+.info-icon:hover::before,
+.info-icon:focus::before,
+.info-icon:focus-visible::before {
+    opacity: 1;
+}
+
+/* Ensure links keep expected padding/hover behavior */
+.dropdown-content a:hover .info-icon {
+    background: rgba(0,122,255,0.12);
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropbtn:focus + .dropdown-content {
+    display: block;
+}
+
+.navigation-bar {
+    background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+    border-bottom: 1px solid #e6e6e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 23px 20px 4px 20px;
+    gap: 1px;
+    z-index: 10;
+    box-sizing: border-box;
+    padding-left: 75px; /* Moved right by 10px (65px + 10px) */
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    color: #000000;
+    font-size: 12.5px;
+    font-weight: 400;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.nav-button:hover {
+    background-color: rgba(0, 122, 255, 0);
+}
+
+.nav-button.active {
+    background-color: #007aff;
+    color: white;
+}
+
+.nav-button.active:hover {
+    background-color: #0056b3;
+}
+
+.library-page {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+.browse-page {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    padding: 40px 30px 40px 50px; /* Adjusted right padding from 40px to 30px to match library content width */
+}
+
+.favorites-section, .all-albums-section-library {
+    margin-bottom: 20px;
+}
+
+.favorites-section h2, .all-albums-section-library h2 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1d1d1f;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e1e1e1;
+    margin-bottom: 20px;
+}
+
+.albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    padding-top: 20px;
+}
+
+.album-card {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden; /* This will clip the child elements to the border-radius */
+}
+
+.album-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.album-card-cover {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background-color: #ffffff;
+    background-image: url('default_itunes.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px; /* Fixed: now rounded on all corners */
+}
+
+.album-card-info {
+    padding: 16px 20px;
+}
+
+.album-card-info h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #1d1d1f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.album-card-info p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.album-card-info .album-artist {
+    color: #007aff; /* Make artist name blue */
+}
+
+.album-card-info .album-meta {
+    font-size: 12px;
+    color: #999;
+    margin: 8px 0 0 0;
+}
+
+/* New styles for album engagement metrics */
+.album-card-engagement {
+    position: absolute;
+    bottom: 0; /* Keep at the bottom */
+    right: 0; /* Move to the right */
+    padding: 0 10px 10px 0; /* Padding from bottom and right */
+    z-index: 100000;
+    display: flex;
+    flex-direction: column; /* Stack vertically */
+    align-items: flex-end; /* Align items to the right */
+    pointer-events: none; /* Allow interaction with background UI */
+}
+
+.album-card-metric {
+    display: flex;
+    align-items: center;
+    background-color: transparent; /* Changed from rgba(0, 0, 0, 0.6) to transparent */
+    border-radius: 4px;
+    padding: 3px 6px;
+    color: black; /* Changed from white to black */
+    font-size: 11px;
+    white-space: nowrap;
+    margin-bottom: 5px; /* Add space between metrics */
+}
+
+.album-card-metric:last-child {
+    margin-bottom: 0; /* No margin for the last metric */
+}
+
+.metric-icon {
+    width: 14px; /* Icon size */
+    height: 14px;
+    margin-right: 4px;
+    /* Removed filter: invert(100%); to make icons black */
+}
+
+.metric-count {
+    font-weight: bold;
+}
+
+
+.delete-album-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.album-card:hover .delete-album-btn {
+    opacity: 1;
+}
+
+.delete-album-btn:hover {
+    background: rgba(255,0,0,0.8);
+}
+
+.album-uploader {
+    font-size: 11px !important;
+    color: #aaa !important;
+    margin: 4px 0 0 0 !important;
+    font-style: italic;
+}
+
+.no-albums {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.expanded-album-view-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto; /* Changed to auto to allow closing by clicking outside */
+}
+
+.expanded-album-view-content {
+    background: #ffffff;
+    border-radius: 10px;
+    width: 450px; /* Adjusted total width to match album art */
+    height: auto; /* Auto height to fit content */
+    max-width: 90vw;
+    max-height: 90vh;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column; /* Main layout is a column */
+    overflow: hidden;
+    position: relative;
+    min-width: 350px; /* Adjusted min width */
+    min-height: 500px;
+    cursor: grab;
+    pointer-events: auto; /* Re-enable events for the content itself */
+}
+
+.expanded-album-view-content:active {
+    cursor: grabbing;
+}
+
+.resize-handle {
+    position: absolute;
+    background: transparent;
+    z-index: 1000;
+}
+
+.resize-handle-top, .resize-handle-bottom {
+    left: 0;
+    width: 100%;
+    height: 10px;
+    cursor: ns-resize;
+}
+
+.resize-handle-top {
+    top: -5px;
+}
+
+.resize-handle-bottom {
+    bottom: -5px;
+}
+
+.resize-handle-left, .resize-handle-right {
+    top: 0;
+    height: 100%;
+    width: 10px;
+    cursor: ew-resize;
+}
+
+.resize-handle-left {
+    left: -5px;
+}
+
+.resize-handle-right {
+    right: -5px;
+}
+
+/* Corner handles */
+.resize-handle-top-left {
+    top: -5px;
+    left: -5px;
+    width: 15px;
+    height: 15px;
+    cursor: nwse-resize;
+}
+
+.resize-handle-top-right {
+    top: -5px;
+    right: -5px;
+    width: 15px;
+    height: 15px;
+    cursor: nesw-resize;
+}
+
+.resize-handle-bottom-left {
+    bottom: -5px;
+    left: -5px;
+    width: 15px;
+    height: 15px;
+    cursor: nesw-resize;
+}
+
+.resize-handle-bottom-right {
+    bottom: -5px;
+    right: -5px;
+    width: 15px;
+    height: 15px;
+    cursor: nwse-resize;
+}
+
+.expanded-album-view-main {
+    display: flex;
+    flex-direction: column; /* Layout is column */
+    width: 100%;
+    flex: 1; /* Allow it to grow */
+    min-height: 0;
+}
+
+.expanded-album-view-header {
+    display: none;
+}
+
+/* NEW: Left Panel for Cover, Controls, Info */
+.expanded-album-view-left-panel {
+    display: flex;
+    flex-direction: column;
+    width: 450px; /* Fixed width for the left panel */
+    flex-shrink: 0;
+    padding: 0; /* Changed from 20px to 0 to make album art fill the panel */
+    box-sizing: border-box;
+    background-color: white; /* Ensure background is white */
+}
+
+.expanded-album-view-now-playing {
+    width: 100%; /* Fill left panel width */
+    aspect-ratio: 1/1; /* Maintain square aspect ratio */
+    position: relative; /* For positioning close button and controls */
+    margin-bottom: 15px; /* Space below the cover */
+}
+
+.expanded-album-view-album-cover {
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    background-image: url('default_itunes.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 0; /* Removed border-radius */
+    flex-shrink: 0;
+    position: relative; /* Needed for positioning close button */
+}
+
+/* Close button positioning */
+.expanded-album-view-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    /* Ensure z-index is high enough */
+    z-index: 11;
+    background: rgba(50, 50, 50, 0.8); /* Changed to grey with transparency */
+    color: white; /* Kept white for contrast */
+    width: 12px; /* Made smaller */
+    height: 12px; /* Made smaller */
+    border-radius: 50%; /* Make it a circle */
+    font-size: 12px; /* Adjusted 'x' size */
+    display: flex; /* Center the 'x' */
+    align-items: center;
+    justify-content: center;
+    border: none; /* Remove any border */
+}
+
+.expanded-album-view-close:hover {
+    background: rgba(100, 100, 100, 0.8); /* Darker grey on hover */
+    color: white;
+}
+
+/* Playback controls (conditionally visible on hover) */
+.expanded-album-view-playback-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent overlay */
+}
+
+.expanded-album-view-track-info:hover .expanded-album-view-playback-controls {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.expanded-album-view-track-info:hover .expanded-album-view-track-title,
+.expanded-album-view-track-info:hover .expanded-album-view-artist-album {
+    opacity: 0; /* Hide text on hover to show controls */
+}
+
+.playback-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expanded-album-view-playback-controls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    padding: 0;
+}
+
+.expanded-album-view-playback-controls #expandedAlbumViewPlayPause {
+    font-size: 32px; /* Larger play/pause button */
+    margin: 0 10px;
+}
+
+.expanded-album-view-playback-controls button:not(#expandedAlbumViewPlayPause) {
+    font-size: 20px; /* Larger skip buttons */
+}
+
+.expanded-album-view-playback-controls button:hover {
+    color: #007aff;
+}
+
+
+.expanded-album-view-track-info {
+    text-align: center;
+    margin: 0; /* Remove top/bottom margin from the container */
+    background: white;
+    padding: 0; /* Remove padding from the container */
+    margin-top: 0;
+    position: relative; /* Now relative for positioning hover controls */
+    cursor: default; /* Not clickable for hover effect anymore */
+    transition: none; /* Remove transitions */
+    flex-shrink: 0;
+    height: 40px; /* Set a fixed height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.expanded-album-view-track-title {
+    font-size: 15px; /* Decreased font size from 17px */
+    font-weight: 400; /* Adjusted font weight to less bold */
+    margin: 0; /* Ensure no margin */
+    color: #1d1d1f; /* Adjusted color to match general UI text */
+    transition: opacity 0.2s ease-in-out;
+}
+
+.expanded-album-view-artist-album {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0px;
+    font-size: 11px;
+    color: #444; /* Darker gray from #666 */
+    position: relative;
+    left: -2px;
+    transition: opacity 0.2s ease-in-out;
+    margin: 0; /* Remove top/bottom margin */
+}
+
+.expanded-album-view-track-artist,
+.expanded-album-view-track-album {
+    cursor: pointer;
+    padding: 2px 2px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    margin: 0;
+}
+
+.expanded-album-view-track-artist:hover,
+.expanded-album-view-track-album:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.expanded-album-view-artist-separator {
+    width: 12px;
+    height: 1px;
+    background-color: #666;
+    margin: 0 2px;
+}
+
+.expanded-album-view-tabs {
+    display: none; /* Old tabs, remove */
+}
+
+.expanded-album-view-tab {
+    display: none; /* Old tabs, remove */
+}
+
+.expanded-album-view-tab:first-child {
+    margin-left: 0;
+}
+
+.expanded-album-view-tab:last-child {
+    margin-right: 0;
+    border-right: 1px solid #d0d0d0; /* Keep border for the last tab */
+}
+
+.expanded-album-view-tab.active {
+    color: #000;
+    border-bottom-color: #007aff;
+    background: #f6f6f6;
+}
+
+.expanded-album-view-tab:hover:not(.active) {
+    background-color: #f5f5f5;
+}
+
+.expanded-album-view-tab-content {
+    flex: 1;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+}
+
+.expanded-album-view-tab-content.active {
+    display: flex;
+}
+
+.expanded-album-view-artwork-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f6f6f6;
+    padding: 40px;
+}
+
+.expanded-album-view-large-artwork {
+    width: 320px;
+    height: 320px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    background-color: #ddd;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
+}
+
+.expanded-album-view-track-details {
+    text-align: center;
+    color: #333;
+}
+
+.expanded-album-view-track-details h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #000;
+}
+
+.expanded-album-view-track-details p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 2px 0;
+}
+
+.expanded-album-view-details-tab {
+    background: #fff;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.expanded-album-view-form-group {
+    margin-bottom: 16px;
+}
+
+.expanded-album-view-form-group label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.expanded-album-view-form-group input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.expanded-album-view-form-group input:focus {
+    outline: none;
+    border-color: #007aff;
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+#visualizerCanvas {
+    display: none;
+}
+
+#embedded-3d-visualizer {
+    width: 100%;
+    height: 100%; /* Fill remaining space */
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+#embedded-3d-visualizer canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.expanded-album-view-controls {
+    background: #e8e8e8;
+    border-top: 1px solid #d0d0d0;
+    padding: 12px 16px;
+    color: #333;
+}
+
+/* New container for progress bar and time display */
+.expanded-album-view-playback-bar-and-time {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between time and bar */
+    padding: 0 20px; /* Padding on the sides for the whole bar and time display */
+    margin: -6px 0 7px 0; /* Keep the existing margin-bottom for placement */
+    flex-shrink: 0;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.expanded-album-view-progress-container {
+    height: 4px; /* Thinner */
+    background: #e0e0e0;
+    border-radius: 2px; /* Adjusted radius for thinner bar */
+    cursor: pointer;
+    position: relative;
+    flex-grow: 1; /* Make it take available space */
+    margin: 0; /* Remove existing margin to be controlled by parent gap */
+}
+
+.expanded-album-view-progress-bar {
+    height: 100%;
+    background: #666; /* Dark grey */
+    border-radius: 2px; /* Adjusted radius */
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* Styles for current and total time text */
+#expandedAlbumViewCurrentTime,
+#expandedAlbumViewTotalTime {
+    font-size: 11px;
+    color: #666;
+    flex-shrink: 0; /* Prevent them from shrinking */
+}
+
+.expanded-album-view-time {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: #666;
+}
+
+.expanded-album-view-progress {
+    flex: 1;
+    height: 2px;
+    background: #ccc;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.expanded-album-view-time-display {
+    display: none; /* Hide the old time display container */
+}
+
+
+.expanded-album-view-sections {
+    flex: 1; /* Take remaining space */
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #e0e0e0; /* Separator from top panel */
+    background: #f8f8f8; /* Background for right panel */
+}
+
+.expanded-album-view-section-tabs {
+    background: white;
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.expanded-album-view-section-tab {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    margin: 0 4px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    width: calc(33.33% - 8px); /* Adjusted width for 3 tabs */
+    text-align: center; /* Center text in button */
+}
+
+.expanded-album-view-section-tab:first-child {
+    margin-left: 0;
+}
+
+.expanded-album-view-section-tab:last-child {
+    margin-right: 0;
+    border-right: 1px solid #d0d0d0; /* Keep border for the last tab */
+}
+
+.expanded-album-view-section-tab.active {
+    background: #999;
+    color: white;
+    border-color: #999;
+}
+
+.expanded-album-view-section-tab:hover:not(.active) {
+    background-color: #f5f5f5;
+}
+
+.expanded-album-view-section-content {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.expanded-album-view-section-content.active {
+    display: flex;
+}
+
+.up-next-list {
+    padding: 8px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.up-next-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.up-next-item:hover {
+    background-color: #f8f8f8;
+}
+
+.up-next-item.current {
+    background-color: #e3f2fd;
+    border-left: 3px solid #007aff;
+}
+
+.up-next-number {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.up-next-info {
+    flex: 1;
+}
+
+.up-next-title {
+    font-size: 14px;
+    font-weight: 400;
+    color: #000;
+    margin-bottom: 2px;
+}
+
+.up-next-artist {
+    font-size: 12px;
+    color: #222;
+}
+
+.up-next-time {
+    font-size: 12px;
+    color: #000;
+}
+
+.lyrics-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.lyrics-input {
+    flex: 1;
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    line-height: 1.5;
+    outline: none;
+    background: #fafafa;
+    resize: none;
+    overflow-y: auto;
+    min-height: 200px; /* Make the lyrics textbox longer for expanded view as well */
+}
+
+.lyrics-input:focus {
+    border-color: #007aff;
+    background: white;
+}
+
+/* Quick View Popup */
+.quick-view-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* Allow interaction with background UI */
+}
+
+.quick-view-content {
+    background: #ffffff;
+    border-radius: 10px;
+    width: 450px; /* Set a fixed width for the main panel content */
+    height: auto; /* Auto height to fit content */
+    max-width: 90vw;
+    max-height: 90vh;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: auto; /* Changed from hidden to auto to allow content to scroll */
+    position: fixed; /* Change to fixed for independent dragging */
+    min-width: 500px; /* Adjusted min width */
+    min-height: 400px; /* Adjusted min height */
+    cursor: grab;
+    padding: 20px; /* Add padding inside the content area */
+    box-sizing: border-box;
+    pointer-events: auto; /* Re-enable pointer events for the content itself */
+    /* Remove scrollbar styling from the main content wrapper, rely on inner elements */
+    scrollbar-width: auto; /* Revert to default browser scrollbar width */
+    scrollbar-color: auto; /* Revert to default browser scrollbar color */
+}
+
+.quick-view-content:active {
+    cursor: grabbing;
+}
+
+/* Remove Webkit scrollbar styling from the main quick view content */
+.quick-view-content::-webkit-scrollbar {
+    width: auto; /* Revert to default */
+    height: auto; /* Revert to default */
+}
+
+.quick-view-content::-webkit-scrollbar-track {
+    background: auto; /* Revert to default */
+}
+
+.quick-view-content::-webkit-scrollbar-thumb {
+    background: auto; /* Revert to default */
+    border-radius: auto; /* Revert to default */
+}
+
+.quick-view-content::-webkit-scrollbar-thumb:hover {
+    background: auto; /* Revert to default */
+}
+
+/* Position close button absolutely within quick-view-content */
+.quick-view-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    /* Ensure z-index is high enough */
+    z-index: 11;
+}
+
+.quick-view-close:hover {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+}
+
+/* New style for "Album by @" text */
+.quick-view-favorite-btn {
+    position: absolute;
+    top: 15px; /* Top margin */
+    left: 15px; /* Left margin */
+    width: 28px; /* Smaller width */
+    height: 28px; /* Smaller height */
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    font-size: 16px; /* Adjust font size if needed */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 11; /* Ensure it's above other content but below close button if desired */
+    transition: background 0.2s, color 0.2s;
+}
+
+.quick-view-favorite-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.quick-view-favorite-btn.favorited {
+    color: #ff3b30; /* Red color when favorited */
+    background: rgba(255, 59, 48, 0.7); /* Slightly transparent red background */
+}
+
+.quick-view-favorite-btn.favorited:hover {
+    background: rgba(255, 59, 48, 0.9);
+}
+
+.quick-view-header {
+    display: none;
+}
+
+/* New style for "Album by @" text */
+.quick-view-album-by {
+    font-size: 13px;
+    color: #999; /* Grey color */
+    margin-bottom: 15px; /* Space below the username */
+    text-align: center; /* Center align the username */
+}
+
+.quick-view-album-by a {
+    color: #999; /* Keep link color grey */
+    text-decoration: none; /* No underline by default */
+}
+
+.quick-view-album-by a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+#quickViewAlbumArtist {
+    color: #007aff;
+}
+
+.quick-view-cover {
+    width: 350px; /* Make cover larger */
+    height: 350px; /* Make cover larger */
+    background-color: #ffffff;
+    background-image: url('default_itunes.png');
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    margin: 20px auto 0px auto;
+}
+
+.quick-view-album-title-below {
+    text-align: center;
+    margin-top: 15px; /* Increase space above title */
+    padding: 0 10px;
+    flex-shrink: 0;
+}
+
+.quick-view-album-title-below h2 {
+    font-size: 24px; /* Increase font size */
+    font-weight: bold;
+    margin: 0;
+    color: #1d1d1f;
+}
+
+.quick-view-album-title-below p {
+    font-size: 18px; /* Increase font size */
+    color: #666;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.quick-view-buttons-above-list {
+    display: none;
+}
+
+.quick-view-react-container {
+    padding: 0 10px;
+    max-height: none;
+    overflow-y: visible;
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-height: 0;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.quick-view-open-album {
+    margin-top: 0;
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    width: fit-content;
+    transition: background-color 0.2s;
+    margin: 10px auto;
+    display: block;
+}
+
+.quick-view-open-album:hover {
+    background-color: #0056b3;
+}
+
+.quick-view-tracklist {
+    padding: 10px 10px 20px 10px;
+    flex-grow: 1;
+    overflow-y: auto; /* Enable vertical scrollbar */
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #888 #f1f1f1; /* For Firefox: thumb color, track color */
+}
+
+.quick-view-tracklist::-webkit-scrollbar {
+    width: 8px; /* Thin scrollbar for Webkit browsers */
+}
+
+.quick-view-tracklist::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Scrollbar track background */
+}
+
+.quick-view-tracklist::-webkit-scrollbar-thumb {
+    background: #888; /* Scrollbar thumb color */
+    border-radius: 4px; /* Rounded corners for the thumb */
+}
+
+.quick-view-tracklist::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker thumb on hover */
+}
+
+.quick-view-tracklist table {
+    font-size: 14px;
+}
+
+.quick-view-tracklist th,
+.quick-view-tracklist td {
+    padding: 4px 5px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quick-view-tracklist .quick-view-track-number-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: center; /* Center content horizontally */
+}
+
+.quick-view-tracklist .quick-view-track-number {
+    width: 20px;
+    text-align: right;
+    padding-right: 10px;
+    color: #999;
+    flex-shrink: 0;
+}
+
+.quick-view-tracklist .quick-view-track-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quick-view-tracklist td:nth-child(2) {
+    width: auto; /* Ensure it takes up remaining space */
+    text-align: center; /* Center the content */
+    color: #1d1d1f; /* Re-apply primary text color */
+}
+
+.quick-view-tracklist td:nth-child(3) {
+}
+
+.quick-view-tracklist th:first-child {
+    text-align: center; /* Center the "Song" header */
+}
+
+.quick-view-tracklist-item {
+    cursor: pointer;
+}
+
+.quick-view-tracklist-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Comments section specific styles */
+/* Professional comment card styles */
+.comment-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(16,24,32,0.04);
+    border: 1px solid rgba(16,24,32,0.04);
+    margin-bottom: 10px;
+    align-items: flex-start;
+    overflow: visible;
+}
+
+.comment-card.indent-1 { margin-left: 18px; max-width: calc(100% - 18px); }
+.comment-card.indent-2 { margin-left: 36px; max-width: calc(100% - 36px); }
+.comment-card.indent-3 { margin-left: 54px; max-width: calc(100% - 54px); }
+
+.comment-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(3,10,18,0.06);
+}
+
+.comment-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-header {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #111;
+    text-decoration: none;
+}
+
+.comment-meta {
+    font-size: 12px;
+    color: #8b8f96;
+    flex-shrink: 0;
+}
+
+.comment-text {
+    color: #222;
+    font-size: 14px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.comment-action {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: background 0.12s, color 0.12s;
+    font-size: 13px;
+}
+
+.comment-action img.reaction-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+.comment-action .reaction-count {
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+}
+
+.comment-action:hover {
+    background: rgba(7,13,31,0.03);
+    color: #111827;
+}
+
+.comment-action.active {
+    background: rgba(0,122,255,0.1);
+    color: #0066cc;
+}
+
+.comment-action.delete {
+    color: #b03030;
+}
+
+.reply-input-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.reply-input-area textarea {
+    flex: 1;
+    min-height: 56px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #e6e6e6;
+    resize: vertical;
+    font-size: 13px;
+}
+
+.reply-input-area button {
+    align-self: flex-end;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: none;
+    background: #007aff;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.replies-container {
+    margin-top: 8px;
+}
+
+/* Preserve existing no-comments styling but make it match card tone */
+.no-comments {
+    text-align: center;
+    color: #6b6f76;
+    font-size: 14px;
+    padding: 18px;
+}
+
+.comments-popup-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999; /* Lower than quick view wrapper if needed, but they should be peers */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* Allow clicks to pass through wrapper to content */
+}
+
+.comments-popup-content {
+    background: #ffffff;
+    border-radius: 10px;
+    width: 400px; /* Set a default width */
+    height: auto; /* Allow height to be set by dragging/resizing */
+    max-width: 90vw;
+    max-height: 95vh;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: auto; /* Changed from hidden to auto to allow content to scroll */
+    position: fixed; /* Change to fixed for independent dragging */
+    min-width: 350px; /* Adjusted min width */
+    min-height: 600px; /* Adjusted min height */
+    cursor: grab;
+    padding: 20px; /* Add padding inside the content area */
+    box-sizing: border-box;
+    pointer-events: auto; /* Re-enable pointer events for the content itself */
+    /* Remove scrollbar styling from the main content wrapper, rely on inner elements */
+    scrollbar-width: auto; /* Revert to default browser scrollbar width */
+    scrollbar-color: auto; /* Revert to default browser scrollbar color */
+}
+
+.comments-popup-content:active {
+    cursor: grabbing;
+}
+
+/* Remove Webkit scrollbar styling from the main comments popup content */
+.comments-popup-content::-webkit-scrollbar {
+    width: auto; /* Revert to default */
+    height: auto; /* Revert to default */
+}
+
+.comments-popup-content::-webkit-scrollbar-track {
+    background: auto; /* Revert to default */
+}
+
+.comments-popup-content::-webkit-scrollbar-thumb {
+    background: auto; /* Revert to default */
+    border-radius: auto; /* Revert to default */
+}
+
+.comments-popup-content::-webkit-scrollbar-thumb:hover {
+    background: auto; /* Revert to default */
+}
+
+/* Position close button absolutely within comments-popup-content */
+.comments-popup-content > .quick-view-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    /* Ensure z-index is high enough */
+    z-index: 11;
+}
+
+.comments-popup-content h3 {
+     font-size: 20px;
+     font-weight: bold;
+     margin-bottom: 15px;
+     color: #1d1d1f;
+}
+
+.comments-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px; /* Add padding for scrollbar space */
+}
+
+.comments-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.no-comments {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    padding: 20px;
+}
+
+.comments-popup-content .comment-input-area {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row; /* Ensure buttons are next to input */
+}
+
+.comments-popup-content .comment-input-area textarea {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 14px;
+    padding: 0;
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    line-height: 1.4;
+    min-height: 20px; /* Adjusted min-height */
+     margin-bottom: 0; /* Remove margin bottom */
+}
+
+.comments-popup-content .comment-input-area button {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.comments-popup-content .comment-input-area button:hover {
+     background-color: #0056b3;
+}
+
+#browseHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    margin-bottom: 20px;
+}
+
+.view-profile-link {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    border: 1px solid #ddd;
+}
+
+.view-profile-link:hover {
+    background-color: #e0e0e0;
+}
+
+/* Styles for shared content elements that get moved */
+.hidden-shared-content {
+    display: none; /* Always hidden in their original container */
+}
+
+.up-next-list-toolbar,
+.lyrics-container-toolbar {
+    padding: 10px; /* Default padding for content sections */
+}
+
+.embedded-3d-visualizer-toolbar-container {
+    padding: 0; /* Visualizer should fill its container without padding */
+}
+
+/* NEW: Visualizer Popout */
+.visualizer-popout {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent; /* Changed from rgba(0, 0, 0, 0.6) to transparent */
+    z-index: 99999; /* Same as expanded album view */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.visualizer-popout-content {
+    background: #ffffff;
+    border-radius: 10px;
+    width: 800px; /* Default width, can be resized */
+    height: 600px; /* Default height, can be resized */
+    max-width: 95vw;
+    max-height: 95vh;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    min-width: 500px;
+    min-height: 400px;
+    cursor: grab;
+    pointer-events: auto;
+}
+
+.visualizer-popout-content:active {
+    cursor: grabbing;
+}
+
+.visualizer-popout-drag-handle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 12;
+    background: rgba(50, 50, 50, 0.8);
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.visualizer-popout-drag-handle:active {
+    cursor: grabbing;
+}
+
+.visualizer-popout-drag-handle img {
+    width: 14px;
+    height: 14px;
+    filter: invert(1);
+}
+
+.visualizer-popout-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 11;
+    background: rgba(50, 50, 50, 0.8);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+}
+
+.visualizer-popout-close:hover {
+    background: rgba(100, 100, 100, 0.8);
+}

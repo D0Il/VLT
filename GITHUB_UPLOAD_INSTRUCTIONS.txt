@@ -1,0 +1,26 @@
+﻿CORRECT GITHUB ROOT CONTENTS
+
+Folders that must exist at repo root:
+- dist/
+- reference/
+- scripts/
+- src/
+
+Files that must exist at repo root:
+- .npmrc
+- DESIGN.md
+- README.md
+- STORAGE_CLEANUP_FIRST.md
+- npm-shrinkwrap.json
+- package-lock.json
+- package.json
+- worker.js
+- wrangler.jsonc
+
+Delete the flattened junk from GitHub root:
+- any file ending in " (number).js", " (number).css", " (number).png", " (number).html", " (number).jpg"
+- MENU BUTTN.png, NEW UI COMPONENT.png, Screenshot*.png, album.css, albuminfo.js, app.js, audio-processor.js, black-heart*.png, broken_heart*.png, config.js, default_itunes.png, drag_icon.png, eyes.png, galaxy-background.js, index.html, index visualizer.html, main.css, main.js, mic.png, musicvideos.css, musicvideos.js, note.png, particle-system.js, player.js, private-vault-patch.js, scene.js, storage.js, styles.css, styles visualizer.css, toolbar.css, tracks.css, tracks.js, ui.js, verify.mjs, build.mjs, audit-reference-trees.mjs, preview-server.mjs, songs-tree.txt, download, white-screen*.jpg, windowe.png IF they are sitting at repo root.
+
+Those asset/code files are only valid inside src/, dist/, scripts/, or reference/.
+Do not upload the zip into GitHub.
+Do not drag files from inside subfolders/search results. Upload the four folders themselves plus the root files.

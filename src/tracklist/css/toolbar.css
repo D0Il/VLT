@@ -1,0 +1,625 @@
+.toolbar {
+    background: linear-gradient(180deg, #ededed 0%, #d1d1d1 100%);
+    padding: 0 90px; /* Changed right padding from 40px to 90px to move content left */
+    border-bottom: 1px solid #e1e1e1;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;  
+    height: 42px;
+    position: relative;
+}
+
+.toolbar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;  
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #b0b0b0;  
+}
+
+/* Compact pill-style navigation matching the provided design (smaller variant) */
+.toolbar-new-ui {
+    position: absolute;
+    left: 6px;
+    top: 62px; /* moved down 10px */
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    pointer-events: auto;
+    z-index: 5;
+    box-sizing: border-box;
+    /* widened overall width so the music selector area is noticeably longer on the right */
+    width: 13.5rem; /* ~216px - increased width for a longer music bar */
+    height: 1.6rem; /* ~26px */
+    background: #fff;
+    border-radius: 6px; /* ensure full 6px rounding for all corners of the bar */
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px; /* base font-size reduced */
+}
+
+/* left pair (previous/next) are independent, fully-rounded pill buttons so each arrow is its own button */
+.toolbar-nav-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0; /* remove space between the < and > buttons */
+    height: 100%;
+    background: transparent;
+    padding: 0 4px; /* slight internal padding to keep group compact */
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Make each arrow button fill the full height and be rounded on all sides */
+.nav-btn {
+    width: calc(1.8rem - 1px); /* 1px smaller */
+    height: calc(100% - 1px);  /* 1px smaller */
+    border: 1px solid #C0C0C0;
+    background: #fff;
+    color: #555;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    border-radius: 6px; /* 6px rounding for arrow buttons */
+    box-sizing: border-box;
+    /* Slightly bolder weight but no micro text-shadow so glyphs keep native weight */
+    font-weight: 700;
+    text-shadow: none;
+}
+
+/* Remove special first/last rounding rules since each button is independently rounded */
+/* Remove divider rule so buttons don't render a hard seam; gap provides visual separation */
+
+/* subtle interaction feedback but visually very light */
+.nav-btn:active { background: #f0f0f0; }
+
+/* central selector field (dropdown-like button) */
+.toolbar-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.45rem; /* slightly increased horizontal padding for a longer label area */
+    height: calc(100% - 2px); /* fit slightly inside the container for a thinner appearance */
+    border: 1px solid #C0C0C0;
+    /* keep left border so the seam with the arrow group is visible */
+    border-left: 1px solid #C0C0C0;
+    border-radius: 6px 6px 6px 6px; /* rounded right outer corners and rounded inner corner at the seam */
+    background: #fff;
+    color: #808080;
+    font-size: 0.85rem; /* slightly smaller label */
+    cursor: pointer;
+    min-width: 7.6rem; /* increased to extend visible selector area to the right */
+    margin-left: 4px; /* a few pixels spacing away from arrow group */
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+/* make selector contents vertically centered and baseline-aligned */
+.toolbar-selector .sel-icon {
+    font-size: 0.95rem;
+    color: #808080;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Replace text glyph with project asset and ensure consistent sizing/alignment */
+.toolbar-note-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+    object-fit: contain;
+    filter: none; /* keep original image colors */
+    margin-right: 4px; /* small gap before text */
+}
+.toolbar-selector .sel-text {
+    color: #555;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+.toolbar-selector .sel-caret {
+    margin-left: auto;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0; /* remove gap so arrows stack tightly */
+    width: 18px; /* compact stacked area */
+    height: 18px;
+    box-sizing: border-box;
+    line-height: 0.8; /* tighten vertical rhythm */
+}
+.toolbar-selector .sel-caret .caret-up,
+.toolbar-selector .sel-caret .caret-down {
+    color: #555;
+    font-size: 0.7rem;
+    line-height: 0.7;
+    display: block;
+    transform-origin: center;
+    margin: 0; /* remove extra spacing */
+    padding: 0;
+    /* Keep bold but remove micro text-shadow for precise glyph rendering */
+    font-weight: 700;
+    text-shadow: none;
+}
+.toolbar-selector .sel-caret .caret-up {
+    margin-bottom: -3px; /* overlap slightly so ^ and v sit on top of each other */
+    transform: translateY(-1px);
+}
+.toolbar-selector .sel-caret .caret-down {
+    margin-top: -3px; /* overlap slightly so ^ and v sit on top of each other */
+    transform: translateY(1px);
+}
+
+/* dropdown menu behavior (kept small and simple) */
+.toolbar-new-ui-dropdown-menu {
+    display: none;
+    position: absolute;
+    /* anchor directly to the bottom edge of the .toolbar-new-ui container */
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 8.5rem;
+    /* Force opaque white background to avoid underlying UI bleeding through */
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    z-index: 10010;
+    pointer-events: auto;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mix-blend-mode: normal !important;
+    background-clip: padding-box !important;
+
+    /* Same isolation/layer promotion as other dropdowns to prevent bleed-through */
+    isolation: isolate !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: opacity, transform, background-color;
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+.toolbar-new-ui-dropdown-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    background: transparent;
+    border: none;
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* accessibility focus */
+.toolbar-selector:focus,
+.nav-btn:focus,
+.toolbar-new-ui-dropdown-menu button:focus {
+    outline: 2px solid rgba(0,122,255,0.12);
+    outline-offset: 2px;
+}
+
+/* ensure the small component does not change surrounding layout */
+.toolbar-new-ui { pointer-events: auto; }
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: -55px; /* Moved controls 25px further left from -10px */
+}
+
+.controls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    padding: 0;
+}
+
+.controls button#playPauseButton {
+    font-size: 24px; 
+    margin: 0 12px;
+}
+
+.controls button:not(#playPauseButton) {
+    font-size: 16px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 41px;
+}
+
+.volume-control input[type="range"] {
+    background: linear-gradient(to bottom, #484848, #484848);
+    -webkit-appearance: none;
+    width: 100px;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white; 
+    cursor: pointer;
+    border: 1px solid #b7b7b7;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+}
+
+.volume-control input[type="range"]:hover {
+    opacity: 1;
+}
+
+.search-bar-container {
+    position: relative;
+    margin-left: 102px; /* Moved search bar right by 50px */
+  margin-right: -70px;
+}
+
+.search-bar {
+    width: 170px;  
+    padding: 2px 5px 2px 25px;
+    border-radius: 3px;
+    border: 1px solid #909090;
+    font-size: 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='%23999'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 5px center;
+    background-size: 16px;
+}
+
+.hidden-tracks-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.hidden-track-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.hidden-track-item:last-child {
+    border-bottom: none;
+}
+
+.unhide-button {
+    background: none;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+.unhide-button:hover {
+    text-decoration: underline;
+}
+
+.now-playing {
+    display: flex;
+    align-items: center;
+    background: white;
+    width: 513px; 
+    height: 42px;
+    position: relative;
+    margin: 0 auto; 
+    top: 0; 
+    left: 58px; /* Moved now-playing 25px further right from 29px to keep it in place */
+    overflow: hidden; /* Ensure the overlay is clipped to the now-playing size */
+}
+
+.now-playing-art {
+    width: 44px;  
+    height: 44px;  
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    top: -1px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    z-index: 2; /* Ensure art is above overlay when playing */
+}
+
+.now-playing-art:hover {
+    opacity: 0.8;
+}
+
+/* Overlay for hover effect on nowPlayingCover */
+.now-playing-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.2s;
+    z-index: 3; /* Above the album art but below the now playing overlay */
+    pointer-events: none; /* Allows click to pass through to .now-playing-art */
+}
+
+.now-playing-art:hover .now-playing-hover-overlay {
+    opacity: 1; /* Show on hover */
+    pointer-events: auto; /* Enable pointer events on hover */
+}
+
+.now-playing-expand-icon {
+    width: 24px; /* Size of the expand icon */
+    height: 24px;
+    filter: invert(100%); /* Make the icon white */
+}
+
+.now-playing-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-left: 8px; 
+    z-index: 2; /* Ensure details are above overlay when playing */
+}
+
+.now-playing-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    top: -3px; 
+}
+
+.now-playing-title {
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;  
+    position: relative;
+    left: -2px; 
+}
+
+.artist-album {
+    display: flex;
+    align-items: center;
+    gap: 4px; 
+    font-size: 11px;  
+    color: #666;
+    position: relative;
+    left: -2px; 
+}
+
+.artist-album .separator {
+    width: 12px; 
+    height: 1px;
+    background-color: #666;
+    margin: 0 2px; 
+}
+
+.progress-bar-container {
+    position: absolute;
+    bottom: 0; 
+    left: 44px; 
+    right: 0;
+    height: 5px;
+    background-color: #e1e1e1;
+    z-index: 2; /* Ensure progress bar is above overlay when playing */
+}
+
+.progress-bar {
+    width: 0;
+    height: 100%;
+    background-color: #a0a0a0;
+    border-radius: 0;
+    transition: width 0.1s linear;
+}
+
+.time-display {
+    position: absolute;
+    top: 18px;  
+    left: 50px;
+    right: 0;
+    font-size: 11px;
+    color: black;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(2px);  
+    z-index: 2; /* Ensure time display is above overlay when playing */
+}
+
+.time-display span:last-child {
+    transform: translateX(-6px);
+}
+
+.now-playing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    z-index: 3; /* Position above all other now-playing elements */
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+/* NEW: Toolbar Right Side container for menu button and search bar */
+.toolbar-right-side {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between menu button and search bar */
+    margin-left: auto; /* Push to the right */
+}
+
+/* NEW: Toolbar Menu Button */
+.toolbar-menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width:40px; /* Increased size from 32px to 40px */
+    height: 41px; /* Increased size from 32px to 40px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-menu-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.toolbar-menu-button:hover img {
+}
+
+/* NEW: Toolbar Player Popup (Floating Menu) */
+.toolbar-player-popup {
+    display: none; /* Hidden by default */
+    position: absolute; /* Position relative to .itunes-window */
+    top: 42px; /* Below the toolbar */
+    right: 40px; /* Aligned with search bar's right edge */
+    background: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10001; /* Above main content, but below quickview/comments */
+    width: 400px; /* Fixed width */
+    min-height: 300px;
+    max-height: calc(100vh - 60px); /* Max height to fit screen, allowing some margin */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* For rounded corners */
+}
+
+.toolbar-player-tabs {
+    display: flex;
+    justify-content: center;
+    background: #f0f0f0;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px;
+    flex-shrink: 0; /* Prevent tabs from shrinking */
+}
+
+.toolbar-player-tab {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    margin: 0 4px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    width: calc(33.33% - 8px); /* Adjusted width for 3 tabs */
+    text-align: center;
+}
+
+.toolbar-player-tab.active {
+    background: #999;
+    color: white;
+    border-color: #999;
+}
+
+.toolbar-player-tab:hover:not(.active) {
+    background-color: #f5f5f5;
+}
+
+#toolbar-player-content {
+    flex-grow: 1;
+    overflow: hidden; /* Manage overflow for the entire content area */
+    display: flex; /* To manage internal content correctly */
+    flex-direction: column;
+}
+
+.toolbar-player-section-content {
+    display: none; /* Hidden by default, activated by tabs */
+    flex: 1; /* Take up available space */
+    overflow-y: auto; /* Enable scrolling for content within each section */
+    padding: 10px; /* Internal padding for content */
+    flex-direction: column; /* For lyrics/up next, ensures content stacks */
+}
+
+.toolbar-player-section-content.active {
+    display: flex;
+}
+
+/* Specific styles for content within toolbar popup to match expanded view */
+.up-next-list-toolbar {
+    /* Reuses .up-next-list styles via class `up-next-list` added by JS */
+}
+
+.lyrics-container-toolbar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.lyrics-input-toolbar {
+    flex: 1;
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    line-height: 1.5;
+    outline: none;
+    background: #fafafa;
+    resize: none;
+    overflow-y: auto;
+    min-height: 200px; /* Make the lyrics textbox longer */
+}
+
+.lyrics-input-toolbar:focus {
+    border-color: #007aff;
+    background: white;
+}
+
+.embedded-3d-visualizer-toolbar-container {
+    width: 100%;
+    height: 100%; /* Fill parent */
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}

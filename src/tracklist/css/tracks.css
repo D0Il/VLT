@@ -1,0 +1,425 @@
+.right-column {
+    flex-grow: 1;
+    padding: 20px;
+    padding-top: 15px;
+    font-size: 12px;
+    position: relative;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 12px;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px 5px;
+    border-bottom: 1px solid #dcdcdc;
+    height: 30px;
+    vertical-align: middle;
+}
+
+th {
+    font-weight: normal;
+    color: #666;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #dcdcdc;
+    position: relative;
+    bottom: 1px;  
+    font-size: 13px;
+    padding-top: 3px;  
+    padding-bottom: 3px;  
+    height: 12px;  
+}
+
+#trackList tbody tr:last-child td {
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.time-column {
+    text-align: right;
+    color: #999;
+}
+
+.action-button {
+    background-color: transparent;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    margin: 0;
+    /* Hide non-visible buttons from pointer events and screen readers until they are shown.
+       Using visibility + opacity prevents invisible interactive area from triggering tooltips. */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, visibility 0.18s;
+}
+
+.action-button.has-audio {
+    color: #6f7378;
+}
+
+tr:hover .action-button {
+    /* When the row is hovered, reveal the action buttons and make them interactive.
+       This ensures tooltips only trigger when the visible button itself is hovered. */
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.add-track-button {
+    background-color: transparent;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px 0;
+    margin-top: 10px;
+    text-align: left;
+    width: 100%;
+}
+
+.play-button {
+    background-color: transparent;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    margin-right: 5px;
+}
+
+.track-number {
+    position: relative;
+    color: #999;
+    font-size: 12px;
+    width: 20px;
+    display: inline-block;
+    text-align: right;
+    margin-right: 10px;
+    left: -13px;
+}
+
+.play-button {
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    background-color: transparent;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    margin-right: 5px;
+    width: 30px;
+    text-align: right;
+}
+
+tr:hover .play-button {
+    opacity: 1;
+}
+
+tr:hover .track-number {
+    opacity: 0;
+}
+
+.explicit-symbol {
+    font-size: 11px; 
+    color: #727275;
+    margin-left: 0px; 
+}
+
+.hide-button {
+    opacity: 0;
+    transition: opacity 0.3s;
+    margin-left: 5px;
+    color: #727275;
+    cursor: pointer;
+    font-size: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+tr:hover .hide-button {
+    opacity: 1;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+td {
+    white-space: nowrap;
+    /* Allow overflow so absolutely-positioned tooltips are not clipped */
+    overflow: visible;
+    text-overflow: ellipsis;
+    min-width: 50px;
+    color: #89898a;
+    font-size: 13px;
+}
+
+/* Ensure action buttons don't affect layout when showing tooltips.
+   Tooltips are rendered with ::after so they are independent of document flow. */
+.action-button {
+    position: relative; /* positioning context for tooltip pseudo-element */
+    z-index: 2; /* above normal row content but below floating modals */
+}
+
+/* Tooltip styling for action buttons (except the play button which doesn't need one) */
+.action-button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    /* place tooltip above the button centered horizontally */
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    /* Make tooltip non-interactive until the actual button is hovered */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.22);
+    transform-origin: bottom center;
+    z-index: 2147483648; /* very high to sit above everything */
+}
+
+/* Small caret triangle pointing down to the button */
+.action-button[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    border-width: 6px 6px 0 6px;
+    border-style: solid;
+    border-color: rgba(0,0,0,0.85) transparent transparent transparent;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    z-index: 2147483648; /* match tooltip triangle z-index */
+    pointer-events: none;
+}
+
+/* Show tooltip on hover/focus (enable interaction only while visible) */
+.action-button[data-tooltip]:hover::after,
+.action-button[data-tooltip]:focus::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px);
+    pointer-events: auto;
+}
+
+.action-button[data-tooltip]:hover::before,
+.action-button[data-tooltip]:focus::before {
+    opacity: 1;
+}
+
+/* Ensure tooltip doesn't push or reposition any sibling elements */
+.action-button { pointer-events: auto; }
+
+/* Keep play-button behavior unchanged (no tooltip required) */
+.play-button {
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    background-color: transparent;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    margin-right: 5px;
+    width: 30px;
+    text-align: right;
+    z-index: 3; /* above normal content so hover still triggers */
+}
+
+td:nth-child(2) {
+    width: 35%;
+    color: #1d1d1f;
+    font-size: 13px;
+    font-weight: 400;
+    position: relative;
+    left: -50px;  
+}
+
+td:nth-child(3) {
+    width: 35%;
+    text-align: right;
+    padding-right: 20px;
+    color: #767a7e;
+    font-size: 13px;
+    position: relative;
+    left: -35px;  
+}
+
+td:nth-child(4) {
+    width: 10%;
+    text-align: right;
+    padding-right: 20px;
+    color: #767a7e;
+    font-size: 13px;
+    position: relative;
+    left: 87px;  
+}
+
+td:nth-child(5) {
+    position: relative;
+    left: -65px;
+}
+
+th:nth-child(3) {
+    text-align: right;
+    position: relative;
+}
+
+th .draggable {
+    cursor: default; /* Changed from ew-resize */
+    user-select: none;
+    position: relative;
+    display: inline-block;
+}
+
+tr, th {
+    transition: padding 0.3s;
+}
+
+#trackList th:nth-child(1) .draggable {
+    position: relative;
+    left: -2px;
+}
+
+#trackList th:nth-child(3) .draggable {
+    position: relative;
+}
+
+.single-star {
+    position: absolute;
+    left: 10px;  
+    color: #89898a;
+    font-size: 11px;
+    opacity: 0.7;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+tbody tr td {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Track list controls */
+.track-list-controls {
+    position: absolute;
+    top: 77px;
+    right: 50px;
+    display: flex;
+    gap: 6px;  
+    align-items: center;
+    z-index: 1;
+}
+
+.track-list-button {
+    background: #007aff;  
+    border: none;
+    color: white;  
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 14px;  
+    border-radius: 18px;  
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;  
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    transition: background-color 0.2s;
+    box-sizing: border-box;
+}
+
+.track-list-button:hover {
+    background: #0056b3;  
+}
+
+.track-list-button.add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;  
+    font-size: 14px; 
+    font-weight: 300; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    padding: 4px 14px;  
+    height: 31px;  
+    line-height: 1; 
+}
+
+@media (orientation: portrait) and (max-width: 1100px) {
+    .track-list-controls {
+        position: static;
+        justify-content: flex-end;
+        padding: 0 22px 8px;
+    }
+
+    #trackList {
+        min-width: 720px;
+    }
+
+    .tracks-section,
+    .tracklist-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.track-list-button.add-btn::before {
+    content: "+";
+    font-size: 22px;  
+    margin-right: -2px;  
+    font-weight: 400;  
+    opacity: 0.6; 
+    line-height: 1; 
+    position: relative;
+    top: -2px;
+}
+
+.track-list-button.more-btn {
+    padding: 0; 
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 8px;  
+    font-weight: bold;  
+    letter-spacing: 0px;  
+    line-height: 1;  
+    text-align: center;  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+tbody tr:hover td {
+    color: #1d1d1f;
+}
+
+tbody tr:hover td:nth-child(2) {
+    color: #1d1d1f;
+}

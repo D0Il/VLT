@@ -1,0 +1,10 @@
+{
+  "name": "vlt-music-vault",
+  "version": "42.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/verify.mjs && node scripts/audit-reference-trees.mjs"
+  },
+  "devDependencies": {}
+}

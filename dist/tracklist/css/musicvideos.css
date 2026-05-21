@@ -1,0 +1,663 @@
+.music-videos-container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+.music-videos-container h2 {
+    font-size: 20px;  
+    margin-bottom: 15px;
+    color: #1d1d1f;
+    font-weight: bold;
+    position: relative;
+    top: 7px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.music-videos-container h2::after {
+    display: none;
+}
+
+.music-videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(260px, 1fr);
+    gap: 8px;                /* reduced gap between cells */
+    overflow-x: auto;
+    overflow-y: visible;
+    white-space: nowrap;
+    padding-bottom: 8px;     /* reduced padding from edges */
+    margin-left: 6px;        /* nudge nearer to screen edge */
+    margin-right: 6px;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #757575 transparent;
+}
+
+.music-videos-grid::-webkit-scrollbar {
+    height: 8px; 
+}
+
+.music-videos-grid::-webkit-scrollbar-thumb {
+    background-color: #484848; 
+}
+
+.music-videos-grid::-webkit-scrollbar-track {
+    background-color: transparent; 
+}
+
+.music-video-item {
+    display: inline-block;
+    width: 260px;            /* smaller tile width */
+    flex-shrink: 0;
+    position: relative;
+}
+
+.music-video-thumbnail-container {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;     /* slightly reduced space under thumbnail */
+    background-color: #eee;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+/* NEW: Style for square aspect ratio */
+.music-video-thumbnail-container.square-ratio {
+    aspect-ratio: 1/1;
+}
+
+.music-video-thumbnail-container .play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2; /* Above the image */
+    cursor: pointer;
+    border-radius: 6px; /* Match thumbnail container */
+}
+
+.music-video-item:hover .play-overlay {
+    opacity: 1;
+}
+
+.music-video-item img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover; /* Default state */
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    transition: transform 0.3s ease, object-fit 0.3s ease; /* Added object-fit transition */
+    margin-bottom: 5px;  
+    position: relative; /* To ensure it's on top of the blurred background */
+    z-index: 1;
+}
+
+.music-video-item img:hover {
+    transform: scale(1.05);
+}
+
+/* NEW: Override image aspect ratio when container is square */
+.music-video-thumbnail-container.square-ratio img {
+    aspect-ratio: 1/1;
+}
+
+/* New styles for the blurred background effect */
+.music-video-thumbnail-container.zoomed-out::before {
+    content: '';
+    position: absolute;
+    top: -10px; right: -10px; bottom: -10px; left: -10px; /* Stretch to avoid edge artifacts */
+    background: inherit; /* Inherit the background-image from the container */
+    filter: blur(8px) brightness(0.9); /* Apply blur and slightly dim */
+    z-index: 0; /* Position behind the main image */
+}
+
+.music-video-thumbnail-container.zoomed-out img {
+    object-fit: contain; /* The "zoomed-out" effect */
+    background-color: transparent; /* Ensure no solid background on the image itself */
+    filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.4)); /* Add a subtle shadow for depth */
+}
+
+.music-video-item p:first-of-type {
+    font-size: 14px;
+    color: #1d1d1f;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.3;
+    margin-top: -3px;  
+    position: relative;
+    top: -3px;  
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.music-video-item p:last-of-type {
+    font-size: 13px;
+    color: #666;
+    margin: -2px 0 0;
+    line-height: 1.3;
+    font-weight: 400;
+    position: relative;
+    top: -6px;
+    margin-top: -6px;  
+}
+
+.music-video-action {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.music-video-item:hover .music-video-action {
+    opacity: 1;
+}
+
+.music-video-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: none;
+}
+
+.music-video-dropdown a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: black;
+    font-size: 13px;
+}
+
+.music-video-dropdown a:hover {
+    background-color: #f0f0f0;
+}
+
+.music-video-explicit {
+    position: static;
+    font-size: 12px;
+    color: #727275;
+    opacity: 1;
+    margin-left: auto;
+}
+
+.music-video-item:hover .music-video-explicit {
+    opacity: 1;
+}
+
+.music-video-item p:first-of-type .music-video-explicit {
+    font-size: 12px;  
+    margin-left: auto;
+    opacity: 1;
+}
+
+/* Collapsible music videos section */
+.music-videos-container.collapsed .music-videos-grid {
+    display: none;
+}
+
+/* Rollout calendar day grid styling */
+#rolloutCalendar {
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto; /* allow horizontal scroll when many months are shown */
+    padding-bottom: 8px;
+}
+
+/* Each month tile wrapper: present each month as an independent "bubble" */
+.rollout-calendar-month,
+.rollout-month-wrapper {
+    flex: 0 0 120px; /* slightly narrower column width for better fit */
+    min-width: 88px; /* allow tighter shrink on narrow viewports */
+    max-width: 140px; /* tighter upper bound so many months stay visible */
+    box-sizing: border-box;
+    overflow: hidden; /* prevent internal overflow from forcing container wider */
+}
+
+/* Month header / daygrid container uses column layout so month label and days stack */
+/* Render each month as a separate UI bubble with background, border and shadow */
+.rollout-month-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;                      /* slightly tighter gap */
+    padding: 10px;                 /* reduced internal padding */
+    background: linear-gradient(180deg,#ffffff,#fbfdff);
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 8px 18px rgba(3,10,18,0.06);
+    box-sizing: border-box;
+    margin: 4px;                   /* smaller external margin */
+    flex: 0 0 110px;               /* narrower fixed basis so more months fit */
+    min-width: 76px;               /* allow tighter shrink on very small viewports */
+    max-width: 130px;
+}
+
+/* Constrain day grid and use CSS grid for predictable layout */
+.rollout-month-daygrid {
+    width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7-day week layout */
+    gap: 6px;
+    justify-items: stretch;
+    align-items: center;
+    padding-top: 6px;
+}
+
+/* Day cells become square and scale to container, preventing overlap */
+.rollout-day-cell {
+    position: relative; /* establish stacking context so pseudo-element sits behind the text */
+    transition: transform 0.12s ease, background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 34px; /* fixed height ensures consistent rows */
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 12px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(3,10,18,0.03);
+}
+
+/* Highlight for live clock days: blue accent + subtle pulse to draw attention */
+.rollout-day-cell[data-rollout-mark="live_clock"] {
+    border-left: 4px solid #1e90ff;
+    background: linear-gradient(90deg, rgba(30,144,255,0.06) 0%, rgba(255,255,255,0.0) 100%);
+    box-shadow: 0 8px 20px rgba(30,144,255,0.06);
+    color: #0b66c3;
+    transform-origin: center;
+    animation: liveClockPulse 2.4s ease-in-out infinite;
+}
+
+/* Stronger visual for currently selected live-clock day */
+.rollout-day-cell[data-rollout-mark="live_clock"].rollout-day-selected {
+    background: linear-gradient(90deg, rgba(30,144,255,0.18) 0%, rgba(30,144,255,0.08) 100%);
+    border-left-color: #0b66c3;
+    box-shadow: 0 12px 30px rgba(11,102,195,0.14);
+    color: white;
+}
+
+/* Pulse keyframes: slight scale + glow fade */
+@keyframes liveClockPulse {
+    0% { transform: scale(1); box-shadow: 0 8px 20px rgba(30,144,255,0.06); }
+    50% { transform: scale(1.03); box-shadow: 0 20px 40px rgba(30,144,255,0.12); }
+    100% { transform: scale(1); box-shadow: 0 8px 20px rgba(30,144,255,0.06); }
+}
+
+/* Hover and selected states */
+.rollout-day-cell:hover {
+    transform: translateY(-4px);
+    border-color: #cfe3ff;
+    background: #f6fbff;
+    box-shadow: 0 8px 20px rgba(3,10,18,0.06);
+}
+.rollout-day-selected {
+    /* keep the blue highlight for selected state */
+    background: #007aff;
+    color: white !important;
+    border-color: rgba(0,122,255,0.95) !important;
+    box-shadow: 0 10px 26px rgba(0,122,255,0.14);
+    position: relative; /* required for the decorative ring pseudo-element */
+    z-index: 2;
+}
+
+/* decorative circular ring to make the selected day look like a circled highlight,
+   uses an inset (smaller) circle so the number remains centered and legible */
+.rollout-day-selected::after {
+    content: '';
+    position: absolute;
+    /* keep the decorative ring nearer the edge so the number remains fully visible */
+    inset: 2px;
+    border-radius: 50%;
+    pointer-events: none;
+    box-sizing: border-box;
+    border: 2px solid rgba(0,122,255,0.95);
+    /* subtle inner glow to emphasize selection without obscuring the center */
+    box-shadow: 0 6px 18px rgba(0,122,255,0.12);
+    background: transparent; /* avoid covering the day number */
+    z-index: 1; /* place ring behind text but above default background */
+}
+
+/* ensure selected cell content (the day number) renders above the decorative ring */
+.rollout-day-selected {
+    z-index: 2;
+    position: relative; /* keep above ::after pseudo-element */
+}
+
+/* Months row: render as a single horizontal line and allow horizontal scrolling when needed */
+#rolloutCalendar .months-row {
+    display: flex;
+    flex-wrap: nowrap;          /* force single-line layout (no wrapping) */
+    gap: 8px;                   /* reduced gap so more months fit on one line */
+    align-items: flex-start;
+    padding: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;           /* horizontal scroll when needed */
+    white-space: nowrap;        /* prevent inline wrapping of children */
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
+}
+
+/* decorative underline that spans from first starred month to last starred month.
+   Positions are set via inline style variables (--underline-left, --underline-right) by JS. */
+#rolloutCalendar .months-row.has-rollout-underline::before {
+    content: "";
+    position: absolute;
+    height: 3px;
+    background: linear-gradient(90deg,#007aff,#66b3ff);
+    left: var(--underline-left, 0px);
+    right: var(--underline-right, 0px);
+    top: calc(50px); /* place under the month bubbles; adjust if bubble height changes */
+    border-radius: 2px;
+    z-index: 1; /* behind month bubbles (which have z-index >1 by default) */
+    pointer-events: none;
+}
+
+/* ensure the months-row container is positioned so the underline can be placed absolutely relative to the page */
+#rolloutCalendar .months-row {
+    position: relative;
+}
+
+/* Day grids row (the larger calendars) is horizontal scrollable if many months are shown */
+#rolloutCalendar .days-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 6px;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+/* Ensure day grids do not shrink and maintain spacing */
+#rolloutCalendar .days-row > .rollout-month-wrapper {
+    flex-shrink: 0;
+}
+
+/* Responsive reduction on narrow screens */
+@media (max-width: 520px) {
+    .rollout-calendar-month,
+    .rollout-month-wrapper { flex: 0 0 100px; min-width: 92px; max-width: 120px; }
+    .rollout-day-cell { height: 28px; font-size: 11px; border-radius: 6px; }
+    #rolloutCalendar .months-row { gap: 8px; }
+    #rolloutCalendar .days-row { gap: 8px; }
+}
+
+.play-button-icon::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 16px solid #333;
+    margin-left: 4px;
+}
+
+/* Compact timeline tiles: reduce empty space around divider/custom/single/album cells,
+   and ensure a visible date label under every tile for consistent presentation. */
+.timeline-tile {
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;                 /* slightly more breathing room for wrapped titles */
+}
+
+/* Slightly smaller artwork boxes so divider/live_clock tiles are visually reduced */
+.timeline-tile .timeline-divider-title,
+.timeline-tile .timeline-custom-title,
+.timeline-tile .timeline-tile img,
+.timeline-tile .timeline-tile div[style*="width: 160px"] {
+    max-width: 80px !important;
+    max-height: 80px !important;
+}
+
+/* Allow divider/live_clock titles to wrap instead of truncating with ellipsis.
+   Make them multi-line and readable while keeping tiles compact. */
+.timeline-divider-title,
+.timeline-custom-title {
+    white-space: normal !important;      /* allow wrapping */
+    overflow: visible !important;
+    text-overflow: unset !important;
+    display: -webkit-box;                /* for multiline behavior if needed */
+    -webkit-line-clamp: unset;           /* don't clamp lines */
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    line-height: 1.15;
+    font-size: 13px;                     /* modest size so multiple lines fit */
+    max-height: none !important;
+    text-align: center;
+    width: 100%;
+}
+
+/* Consistent, visible date label under every tile (album/single/divider/custom) */
+.timeline-tile-date {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    line-height: 1.05;
+    min-height: 14px;
+    text-align: center;
+    width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+}
+
+/* Interval label styling: primary + decomposition — stacked and non-shrinking to avoid overlap */
+.timeline-interval {
+    display: flex;               /* use flex for consistent stacking */
+    flex-direction: column;      /* stack primary + decomposition vertically */
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    min-width: 84px;            /* slightly narrower to reduce collisions */
+    max-width: 100px;
+    flex-shrink: 0;             /* prevent the interval from shrinking against neighbors */
+    box-sizing: border-box;
+    text-align: center;
+    background: rgba(255,255,255,0.0); /* neutral background; keep transparent by default */
+    z-index: 2;                 /* ensure label sits above decorative elements but below tiles */
+    pointer-events: auto;       /* allow interaction (exclude button etc.) */
+    line-height: 1;
+}
+
+.timeline-interval .interval-primary {
+    font-weight: 700;
+    font-size: 12px;
+    color: #222;
+    line-height: 1.05;
+    white-space: normal;        /* allow wrapping if needed */
+    word-break: break-word;
+    margin: 0;
+}
+
+.timeline-interval .interval-decomposition {
+    font-size: 11px;
+    color: #666;
+    opacity: 0.95;
+    line-height: 1.05;
+    white-space: normal;        /* allow decomposition to stack cleanly */
+    word-break: break-word;
+    margin: 0;
+}
+
+/* Exclude button visibility and hover affordance */
+.timeline-arrow-wrap .interval-exclude-btn {
+    position: relative;
+    top: -4px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+.timeline-arrow-wrap:hover .interval-exclude-btn,
+.timeline-arrow-wrap:focus-within .interval-exclude-btn {
+    opacity: 1;
+}
+
+/* When interval excluded, visually dim the primary and decomposition */
+.timeline-arrow-wrap.interval-excluded .timeline-interval .interval-primary,
+.timeline-arrow-wrap.interval-excluded .timeline-interval .interval-decomposition {
+    color: #b5b5b5;
+    opacity: 0.65;
+}
+
+/* Exclusion & arrow wrapper: layout vertically and provide breathing room so labels don't overlap neighbors */
+.timeline-arrow-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;                    /* removed gap so arrow and label sit flush */
+    padding: 0;                /* remove horizontal padding for no extra space */
+    vertical-align: middle;
+    flex-shrink: 0;            /* avoid collapsing in tight horizontal flows */
+    min-width: 30px;           /* smaller reserved width to tighten spacing */
+    box-sizing: border-box;
+}
+
+/* Exclude button: keep small and hidden until hover/focus, accessible via keyboard */
+.timeline-arrow-wrap .interval-exclude-btn {
+    opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease;
+    position: relative;
+    top: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* When an interval is excluded, grey out the arrow and label */
+.timeline-arrow-wrap.interval-excluded .timeline-arrow,
+.timeline-arrow-wrap.interval-excluded .timeline-interval {
+    color: #bbb !important;
+    opacity: 0.55;
+}
+
+/* Provide an extra visual cue on the small exclude button when excluded */
+.timeline-arrow-wrap.interval-excluded .interval-exclude-btn {
+    color: #b33;
+}
+
+/* Make the exclude button accessible and visually compact */
+.interval-exclude-btn {
+    background: transparent;
+    border: none;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    color: #888;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+/* Slightly tighten divider tile visuals */
+.timeline-tile[data-type="divider"],
+.timeline-tile.divider, /* defensive selector if a class is used elsewhere */
+#rolloutTimelineCanvas .timeline-tile > .timeline-divider-title {
+    padding: 1px 3px;
+}
+
+/* Ensure date inputs (when visible) and their labels are compact */
+.timeline-tile input[type="date"] {
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Preserve the existing rollout view-mode hiding rules but keep date labels visible in view-mode */
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile .track-list-button,
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile input[type="file"],
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile .music-video-action,
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile .reply-input-area,
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile .timeline-tile .track-list-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* In view-mode, show date labels as text (inputs hidden) */
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile input[type="date"] {
+    display: none !important;
+}
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile .timeline-tile-date {
+    display: block !important;
+    color: #444;
+    font-weight: 600;
+}
+
+/* Replace date inputs with plain text appearance in view-mode */
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile input[type="date"] {
+    display: none !important;
+}
+
+/* Ensure editable title areas appear as plain text in view mode */
+#rolloutTimelineCanvas.rollout-view-mode .timeline-divider-title.editable,
+#rolloutTimelineCanvas.rollout-view-mode .timeline-custom-title.editable,
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile .editable {
+    pointer-events: none;
+    user-select: text;
+    outline: none;
+    border: none;
+    background: transparent;
+    color: #222;
+}
+
+/* Provide a small visual cue for view mode: slightly reduced tile opacity */
+#rolloutTimelineCanvas.rollout-view-mode .timeline-tile {
+    opacity: 0.98;
+}
