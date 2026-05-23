@@ -590,12 +590,12 @@ function objectUrl(key) {
 function displayTitle(r) { return String(r?.customTitle || r?.title || 'Untitled').trim() || 'Untitled'; }
 function albumTitle(album) { return String(album?.title || 'Untitled Album').trim() || 'Untitled Album'; }
 function sectionLabel(section) {
-  return section === 'releases' ? 'Releases' : section === 'official' ? 'Songs' : section === 'demos' ? 'Demos' : section === 'beats' ? 'Instrumental' : 'Music';
+  return section === 'releases' ? 'Releases' : section === 'official' ? 'Demos' : section === 'demos' ? 'Scraps' : section === 'beats' ? 'Instrumental' : 'Music';
 }
 function countLabel(section, n) {
   if (section === 'releases') return `${n} releases`;
-  if (section === 'official') return `${n} songs`;
-  if (section === 'demos') return `${n} demos`;
+  if (section === 'official') return `${n} demos`;
+  if (section === 'demos') return `${n} scraps`;
   if (section === 'beats') return `${n} standalone`;
   return `${n} in vault`;
 }
@@ -846,8 +846,7 @@ function homeView() {
   const c = counts();
   const tiles = [
     `<button class="vault-tile primary" data-go="releases"><span>Releases</span><b>${c.releases}</b><em></em></button>`,
-    `<button class="vault-tile primary" data-go="official"><span>Songs</span><b>${c.official}</b><em></em></button>`,
-    `<button class="vault-tile primary" data-go="demos"><span>Demos</span><b>${c.demos}</b><em></em></button>`,
+    `<button class="vault-tile primary" data-go="official"><span>Demos</span><b>${c.official}</b><em></em></button>`,
     c.tracklist ? `<button class="vault-tile quiet" data-go="tracklist"><span>Tracklist</span><b>${c.tracklist}</b><em></em></button>` : '',
     c.beats ? `<button class="vault-tile quiet" data-go="beats"><span>Instrumental</span><b>${c.beats}</b><em></em></button>` : ''
   ].filter(Boolean);
@@ -858,7 +857,7 @@ function homeView() {
           <div class="kicker">Home</div>
           <h1>Music Vault</h1>
         </div>
-        <div class="collection-number"><b>${c.all}</b><span>songs + demos</span></div>
+        <div class="collection-number"><b>${c.all}</b><span>demos</span></div>
       </div>
       <div class="home-landing-grid tiles-${tiles.length}">${tiles.join('')}</div>
     </section>
@@ -874,11 +873,14 @@ function libraryView(section = null) {
       : source.filter(r => !section || r.section === section);
   const recs = base;
   const title = section ? sectionLabel(section) : 'Music';
+  const headerAction = section === 'official'
+    ? `<button class="btn scraps-toggle" data-go="demos">Scraps</button>`
+    : '';
   return `<main class="library">
-    <div class="library-head ${section === 'beats' ? 'support-head' : ''}"><div><h1>${esc(title)}</h1></div><span class="badge">${countLabel(section, recs.length)}</span></div>
+    <div class="library-head ${section === 'beats' ? 'support-head' : ''}"><div><h1>${esc(title)}</h1></div><div class="header-actions">${headerAction}<span class="badge">${countLabel(section, recs.length)}</span></div></div>
     <div class="filters">
       <input class="search" value="${esc(query)}" placeholder="Search" />
-      ${section ? '' : '<select class="section-filter"><option value="all">All</option><option value="releases">Releases</option><option value="official">Songs</option><option value="demos">Demos</option><option value="beats">Instrumental</option></select>'}
+      ${section ? '' : '<select class="section-filter"><option value="all">All</option><option value="releases">Releases</option><option value="official">Demos</option><option value="demos">Scraps</option><option value="beats">Instrumental</option></select>'}
       <select class="status-filter"><option value="all">Any status</option><option value="unsorted">Unsorted</option><option value="keep">Keep</option><option value="mix">Mix</option><option value="done">Done</option></select>
       <select class="sort-filter" aria-label="Sort">${sortOptions()}</select>
     </div>
@@ -1019,6 +1021,10 @@ function drawer() {
   const r = selected();
   if (!r) return `<aside class="drawer ${drawerOpen ? 'open' : ''}"></aside>`;
   const groups = groupedFiles(r);
+  const audioOptions = (r.files || [])
+    .filter(f => AUDIO_RE.test(f.name))
+    .map(f => `<option value="${esc(f.key)}" ${f.key === r.mainKey ? 'selected' : ''}>${esc(f.name)}</option>`)
+    .join('');
   return `<aside class="drawer ${drawerOpen ? 'open' : ''}">
     <div class="section-title"><h2>${esc(displayTitle(r))}</h2><button class="btn" data-action="close-drawer">Close</button></div>
     <div class="detail-hero">
@@ -1026,6 +1032,8 @@ function drawer() {
       <div><span>Instrumental</span><b>${esc(r.instrumentalName || 'None')}</b></div>
     </div>
     <div class="field"><label>Title</label><input id="edit-title" value="${esc(displayTitle(r))}"></div>
+    <div class="field"><label>Type</label><select id="edit-section"><option value="official">Demos</option><option value="demos">Scraps</option></select></div>
+    <div class="field"><label>Main audio</label><select id="edit-main-audio">${audioOptions || '<option value="">No audio files</option>'}</select></div>
     <div class="field"><label>Status</label><select id="edit-status"><option>unsorted</option><option>keep</option><option>mix</option><option>done</option></select></div>
     <div class="field"><label>Project</label><input id="edit-project" value="${esc(r.project || '')}"></div>
     <div class="field"><label>Mood</label><input id="edit-mood" value="${esc(r.mood || '')}"></div>
@@ -1124,8 +1132,7 @@ function render() {
   const navItems = [
     { view: 'home', label: 'Home', count: '', tier: 'icon', icon: 'home', group: 'main' },
     { view: 'releases', label: 'Releases', count: c.releases, tier: 'primary', icon: 'releases' },
-    { view: 'official', label: 'Songs', count: c.official, tier: 'primary', icon: 'songs' },
-    { view: 'demos', label: 'Demos', count: c.demos, tier: 'primary', icon: 'demos' },
+    { view: 'official', label: 'Demos', count: c.official, tier: 'primary', icon: 'songs' },
     { view: 'albums', label: 'Albums', count: c.albums, tier: 'primary', icon: 'albums' },
     { view: 'beats', label: 'Beats', count: c.beats, tier: 'quiet', icon: 'instrumental' },
     { view: 'tracklist', label: 'Tracklist', count: c.tracklist, tier: 'quiet', icon: 'tracklist' },
@@ -1217,6 +1224,7 @@ function bind() {
   $$('[data-action]').forEach(b => b.onclick = () => action(b.dataset.action));
   const r = selected();
   if (r && $('#edit-status')) $('#edit-status').value = r.status || 'unsorted';
+  if (r && $('#edit-section')) $('#edit-section').value = r.section === 'demos' ? 'demos' : 'official';
   bindPlayer();
   hydrateDurations();
 }
@@ -1250,6 +1258,13 @@ async function saveDetails() {
   const r = selected(); if (!r) return;
   const nextTitle = ($('#edit-title')?.value || '').trim();
   r.customTitle = nextTitle && nextTitle !== r.title ? nextTitle : '';
+  r.section = $('#edit-section')?.value || r.section || 'official';
+  const mainKey = $('#edit-main-audio')?.value || '';
+  const mainFile = (r.files || []).find(f => f.key === mainKey);
+  if (mainFile) {
+    r.mainKey = mainFile.key;
+    r.mainName = mainFile.name;
+  }
   r.status = $('#edit-status').value;
   r.project = $('#edit-project').value;
   r.mood = $('#edit-mood').value;

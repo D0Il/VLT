@@ -1489,3 +1489,24 @@ select { height: 38px; border-radius: 8px; padding: 0 14px; }
 .upload-current { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .upload-errors { margin-top: 10px; display: grid; gap: 6px; max-height: 120px; overflow: auto; }
 .upload-errors div { color: var(--danger); font-size: 12px; line-height: 1.35; padding: 7px 9px; border: 1px solid rgba(255,107,107,.25); border-radius: 8px; background: rgba(255,107,107,.06); }
+
+.library-head .header-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-left:auto;
+  justify-content:flex-end;
+}
+.library-head .scraps-toggle{
+  min-height:34px;
+  padding:0 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  border-color:rgba(255,255,255,.18);
+  color:#fbfbfb;
+  box-shadow:inset 0 1px rgba(255,255,255,.08);
+}
+.library-head .scraps-toggle:hover{
+  background:rgba(255,255,255,.16);
+  border-color:rgba(255,255,255,.28);
+}
