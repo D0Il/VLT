@@ -109,15 +109,16 @@ button { cursor: pointer; }
   transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, color .16s ease, transform .16s ease;
 }
 .nav-label {
-  min-width: 0;
+  min-width: max-content;
   display: inline-flex;
   align-items: center;
   gap: 9px;
 }
 .nav-label span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 .nav-symbol {
   width: 19px;
