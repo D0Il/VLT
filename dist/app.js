@@ -498,7 +498,10 @@ function filteredRecordings() {
   return state.recordings.filter(r => {
     const q = query.trim().toLowerCase();
     const matchesQ = !q || [displayTitle(r), r.title, r.project, r.mood, r.status, r.mainName].join(' ').toLowerCase().includes(q);
-    const matchesS = filterSection === 'all' || r.section === filterSection;
+    const matchesS = filterSection === 'all'
+      || (filterSection === 'official' ? r.section === 'official' && !isReleaseTrack(r)
+        : filterSection === 'releases' ? isReleaseTrack(r)
+        : r.section === filterSection);
     const matchesStatus = filterStatus === 'all' || (r.status || 'unsorted') === filterStatus;
     return matchesQ && matchesS && matchesStatus;
   });
@@ -515,16 +518,19 @@ function searchAndStatusRecordings() {
 
 function counts() {
   const audioBytes = state.recordings.reduce((sum, r) => sum + (r.size || 0), 0);
-  const official = state.recordings.filter(r => r.section === 'official').length;
+  const releaseRecs = state.recordings.filter(isReleaseTrack);
+  const officialRecs = state.recordings.filter(r => r.section === 'official' && !isReleaseTrack(r));
+  const official = officialRecs.length;
+  const releases = releaseRecs.length;
   const demos = state.recordings.filter(r => r.section === 'demos').length;
   const beats = state.recordings.filter(r => r.section === 'beats').length;
   const pairable = state.recordings.filter(r => r.section !== 'beats');
-  const officialRecs = state.recordings.filter(r => r.section === 'official');
   const demoRecs = state.recordings.filter(r => r.section === 'demos');
   const paired = pairable.filter(r => r.instrumentalKey).length;
   return {
     all: state.recordings.length,
     official,
+    releases,
     demos,
     beats,
     albums: state.albums?.length || 0,
@@ -584,9 +590,10 @@ function objectUrl(key) {
 function displayTitle(r) { return String(r?.customTitle || r?.title || 'Untitled').trim() || 'Untitled'; }
 function albumTitle(album) { return String(album?.title || 'Untitled Album').trim() || 'Untitled Album'; }
 function sectionLabel(section) {
-  return section === 'official' ? 'Songs' : section === 'demos' ? 'Demos' : section === 'beats' ? 'Instrumental' : 'Music';
+  return section === 'releases' ? 'Releases' : section === 'official' ? 'Songs' : section === 'demos' ? 'Demos' : section === 'beats' ? 'Instrumental' : 'Music';
 }
 function countLabel(section, n) {
+  if (section === 'releases') return `${n} releases`;
   if (section === 'official') return `${n} songs`;
   if (section === 'demos') return `${n} demos`;
   if (section === 'beats') return `${n} standalone`;
@@ -677,6 +684,10 @@ function albumById(id) {
 function albumTracks(album) {
   const ids = new Set(album?.trackIds || []);
   return state.recordings.filter(r => ids.has(r.id));
+}
+
+function isReleaseTrack(r) {
+  return r?.section === 'official' && albumMembershipCount(r.id) > 0;
 }
 
 function albumCoverKey(album) {
@@ -816,9 +827,25 @@ function groupedRows(recs) {
     .join('');
 }
 
+function groupedReleaseRows(recs) {
+  if (!recs.length) return empty('No releases');
+  const groups = new Map();
+  for (const album of state.albums || []) {
+    const tracks = sortedRecordings(recs.filter(r => (album.trackIds || []).includes(r.id)));
+    if (tracks.length) groups.set(albumTitle(album), tracks);
+  }
+  return [...groups.entries()]
+    .map(([label, items]) => {
+      const sizeClass = items.length === 1 ? 'one' : items.length === 2 ? 'two' : items.length <= 4 ? 'few' : 'many';
+      return `<section class="shelf-group shelf-${sizeClass}"><div class="shelf-label"><b>${esc(label)}</b><span>${items.length}</span></div><div class="list">${items.map(row).join('')}</div></section>`;
+    })
+    .join('');
+}
+
 function homeView() {
   const c = counts();
   const tiles = [
+    `<button class="vault-tile primary" data-go="releases"><span>Releases</span><b>${c.releases}</b><em></em></button>`,
     `<button class="vault-tile primary" data-go="official"><span>Songs</span><b>${c.official}</b><em></em></button>`,
     `<button class="vault-tile primary" data-go="demos"><span>Demos</span><b>${c.demos}</b><em></em></button>`,
     c.tracklist ? `<button class="vault-tile quiet" data-go="tracklist"><span>Tracklist</span><b>${c.tracklist}</b><em></em></button>` : '',
@@ -839,18 +866,23 @@ function homeView() {
 }
 
 function libraryView(section = null) {
-  const base = (section ? searchAndStatusRecordings() : filteredRecordings()).filter(r => !section || r.section === section);
+  const source = section ? searchAndStatusRecordings() : filteredRecordings();
+  const base = section === 'releases'
+    ? source.filter(isReleaseTrack)
+    : section === 'official'
+      ? source.filter(r => r.section === 'official' && !isReleaseTrack(r))
+      : source.filter(r => !section || r.section === section);
   const recs = base;
   const title = section ? sectionLabel(section) : 'Music';
   return `<main class="library">
     <div class="library-head ${section === 'beats' ? 'support-head' : ''}"><div><h1>${esc(title)}</h1></div><span class="badge">${countLabel(section, recs.length)}</span></div>
     <div class="filters">
       <input class="search" value="${esc(query)}" placeholder="Search" />
-      ${section ? '' : '<select class="section-filter"><option value="all">All</option><option value="official">Songs</option><option value="demos">Demos</option><option value="beats">Instrumental</option></select>'}
+      ${section ? '' : '<select class="section-filter"><option value="all">All</option><option value="releases">Releases</option><option value="official">Songs</option><option value="demos">Demos</option><option value="beats">Instrumental</option></select>'}
       <select class="status-filter"><option value="all">Any status</option><option value="unsorted">Unsorted</option><option value="keep">Keep</option><option value="mix">Mix</option><option value="done">Done</option></select>
       <select class="sort-filter" aria-label="Sort">${sortOptions()}</select>
     </div>
-    <section class="shelf-panel">${groupedRows(recs)}</section>
+    <section class="shelf-panel">${section === 'releases' ? groupedReleaseRows(recs) : groupedRows(recs)}</section>
   </main>`;
 }
 
@@ -1074,6 +1106,7 @@ function unlockView() {
 function navIcon(name) {
   const icons = {
     home: '<path d="M3.5 10.5 12 3l8.5 7.5"/><path d="M5.75 9.5V20h12.5V9.5"/><path d="M10 20v-6h4v6"/>',
+    releases: '<path d="M12 3.2 14.7 8.67 20.75 9.55 16.37 13.82 17.4 19.85 12 17.01 6.6 19.85 7.63 13.82 3.25 9.55 9.3 8.67Z" fill="currentColor" stroke="none"/>',
     songs: '<path d="M14 4v10.5"/><path d="M14 4h5v3h-5"/><circle cx="9" cy="16.5" r="3"/><path d="M12 16.5V8"/>',
     demos: '<path d="M6 4h9l3 3v13H6z"/><path d="M15 4v4h4"/><path d="M9 14h6"/><path d="M9 17h4"/>',
     albums: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.25"/><path d="M12 3.5v2"/><path d="M20.5 12h-2"/>',
@@ -1086,10 +1119,11 @@ function navIcon(name) {
 
 function render() {
   if (!unlocked) { $('#app').innerHTML = unlockView(); bind(); return; }
-  const content = view === 'home' ? homeView() : view === 'official' ? libraryView('official') : view === 'demos' ? libraryView('demos') : view === 'albums' ? albumsView() : view === 'beats' ? instrumentalView() : view === 'tracklist' ? tracklistView() : view === 'storage' ? storageView() : homeView();
+  const content = view === 'home' ? homeView() : view === 'releases' ? libraryView('releases') : view === 'official' ? libraryView('official') : view === 'demos' ? libraryView('demos') : view === 'albums' ? albumsView() : view === 'beats' ? instrumentalView() : view === 'tracklist' ? tracklistView() : view === 'storage' ? storageView() : homeView();
   const c = counts();
   const navItems = [
     { view: 'home', label: 'Home', count: '', tier: 'icon', icon: 'home', group: 'main' },
+    { view: 'releases', label: 'Releases', count: c.releases, tier: 'primary', icon: 'releases' },
     { view: 'official', label: 'Songs', count: c.official, tier: 'primary', icon: 'songs' },
     { view: 'demos', label: 'Demos', count: c.demos, tier: 'primary', icon: 'demos' },
     { view: 'albums', label: 'Albums', count: c.albums, tier: 'primary', icon: 'albums' },
