@@ -235,7 +235,7 @@ export default {
         const looseRoot = [];
         const topPrefixes = new Map();
         for (const obj of objects) {
-          const target = safeKey(canonicalKeyForPath(obj.key, { size: obj.size, lastModified: parseTimestamp(obj.customMetadata?.lastModified) }));
+          const target = safeKey(canonicalKeyForPath(obj.key, { size: obj.size, lastModified: parseTimestamp(obj.customMetadata?.lastModified) || parseTimestamp(obj.uploaded) }));
           const parts = obj.key.split('/').filter(Boolean);
           if (parts.length === 1 && AUDIO_RE.test(obj.key)) looseRoot.push({ key: obj.key, target, size: obj.size });
           if (parts[0] && parts[0] !== 'vault') {
@@ -255,7 +255,7 @@ export default {
         const operations = [];
         for (const obj of objects) {
           if (/ongoing multipart upload/i.test(obj.key)) { await env.VAULT_BUCKET.delete(obj.key); deleted++; operations.push({ type: 'deleted-failed-upload', from: obj.key }); continue; }
-          const target = safeKey(canonicalKeyForPath(obj.key, { size: obj.size, lastModified: parseTimestamp(obj.customMetadata?.lastModified) }));
+          const target = safeKey(canonicalKeyForPath(obj.key, { size: obj.size, lastModified: parseTimestamp(obj.customMetadata?.lastModified) || parseTimestamp(obj.uploaded) }));
           if (!target || target === obj.key || target === STATE_KEY) { skipped++; continue; }
           const existing = await env.VAULT_BUCKET.head(target);
           if (existing && existing.size === obj.size) {

@@ -202,7 +202,7 @@ function canonicalKeyForPath(path, fileMeta = {}) {
 function rebuildEntitiesFromObjects(objects) {
   const map = new Map();
   for (const obj of objects) {
-    const c = classifyPath(obj.key, { size: obj.size, lastModified: parseTimestamp(obj.customMetadata?.lastModified) });
+    const c = classifyPath(obj.key, { size: obj.size, lastModified: parseTimestamp(obj.customMetadata?.lastModified) || parseTimestamp(obj.uploaded) });
     if (!c.entityName || c.skip) continue;
     if (!map.has(c.id)) {
       map.set(c.id, {
@@ -1430,7 +1430,7 @@ function bindPlayer() {
     if (currentTime) currentTime.textContent = durationLabel(audio.currentTime);
   };
   audio.onloadedmetadata = () => {
-    rememberDuration(audio.src, audio.duration);
+    rememberDuration(r.mainKey, audio.duration);
     if (totalTime) totalTime.textContent = durationLabel(audio.duration);
     if (playerPosition && playerPosition < audio.duration) audio.currentTime = playerPosition;
   };
@@ -1467,19 +1467,22 @@ function bindPlayerVolume() {
   audio.muted = playerMuted || playerVolume <= 0;
 }
 
-function rememberDuration(src, duration) {
-  const key = decodeURIComponent(String(src || '').split('key=')[1] || '');
-  if (!key || !duration || state.durations?.[key]) return;
+function rememberDuration(key, duration) {
+  if (!key || !duration || !Number.isFinite(duration) || state.durations?.[key]) return;
   state.durations[key] = Math.round(duration);
   saveState().catch(console.error);
 }
 
 function hydrateDurations() {
-  const keys = state.recordings.filter(r => r.mainKey && !state.durations?.[r.mainKey]).slice(0, 8).map(r => r.mainKey);
+  const keys = [...new Set(state.recordings
+    .filter(r => r.mainKey && !state.durations?.[r.mainKey])
+    .map(r => r.mainKey))];
+
   for (const key of keys) {
     const audio = new Audio(objectUrl(key));
     audio.preload = 'metadata';
-    audio.onloadedmetadata = () => rememberDuration(audio.src, audio.duration);
+    audio.onloadedmetadata = () => rememberDuration(key, audio.duration);
+    audio.onerror = () => {};
   }
 }
 
