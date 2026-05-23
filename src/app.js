@@ -858,7 +858,7 @@ function homeView() {
           <div class="kicker">Home</div>
           <h1>Music Vault</h1>
         </div>
-        <div class="collection-number"><b>${c.all}</b><span>demos</span></div>
+        <div class="collection-number"><b>${c.all}</b><span>songs</span></div>
       </div>
       <div class="home-landing-grid tiles-${tiles.length}">${tiles.join('')}</div>
     </section>
