@@ -524,11 +524,12 @@ function counts() {
   const releases = releaseRecs.length;
   const demos = state.recordings.filter(r => r.section === 'demos').length;
   const beats = state.recordings.filter(r => r.section === 'beats').length;
-  const pairable = state.recordings.filter(r => r.section !== 'beats');
+  const libraryRecs = state.recordings.filter(r => r.section !== 'beats' && r.section !== 'demos');
+  const pairable = libraryRecs;
   const demoRecs = state.recordings.filter(r => r.section === 'demos');
   const paired = pairable.filter(r => r.instrumentalKey).length;
   return {
-    all: state.recordings.length,
+    all: libraryRecs.length,
     official,
     releases,
     demos,
